@@ -25,10 +25,9 @@ class Graph:
         # initialize an NxN adjacency matrix for our graph
         self.graph = np.zeros((self.n, self.n))
 
-        # W[i] is the sum of the values in the i-th row of the 
-        # upper-right triangular adj matrix
-        # tldr: W stores the edges for random & uniform edge selection
-        self.W = self.n * [0]
+        # stores the (i, j) coordinates of all the valid edges in the adj matrix
+        # note: only stores the edges in the upper-right triangular matrix (since the matrix is symmetric)
+        self.edge_list = []
 
         # read in the edges from the file
         for line in data_file:
@@ -38,9 +37,11 @@ class Graph:
             # we have an undirected graph, so edge A->B also means edge B->A
             self.graph[nodes[1]][nodes[0]] += 1
 
-        for i in range(self.n):
-            for j in range(i+1, self.n):
-                self.W[i] += self.graph[i][j]
+            # add this edge to our edge list, with the smaller node coming first
+            if nodes[0] > nodes[1]:
+                nodes[0], nodes[1] = nodes[1], nodes[0]
+            self.edge_list.append([nodes[0], nodes[1]])
+
         data_file.close()
 
     '''
@@ -72,31 +73,30 @@ class Graph:
         self.graph[node_u] = 0
         self.graph[:, node_u] = 0
 
-        # Set G(u, v) = 0 (removes self-loop)
+        new_edge_list = []
+        # re attach the edges
+        for edge in self.edge_list:
+            if edge[0] == node_u:
+                edge[0] = node_v
+            elif edge[1] == node_u:
+                edge[1] = node_v
+            
+            # dont keep self loops after the contraction
+            if edge[0] != edge[1]:
+                new_edge_list.append(edge)
+
+        self.edge_list = new_edge_list
+
+        # Set G(v, v) = 0 (removes self-loop on node v in adj matrix)
         self.graph[node_v][node_v] = 0
 
-        # update W
-        self.W[node_u] -= 1
 
     '''
-    :param W: an array where W[i] is the sum of the values of the 
-                i-th row in the upper-right triangle of the adj matrix.
     randomly and uniformly selects an edge from graph
     returns i,j such that they form an edge in the graph
     '''
     def random_pick(self):
-        edge_list = []
-        
-        # put all the valid edges into a list
-        for i in range(self.n):
-            for j in range(i+1, self.n):
-                if(self.graph[i][j] != 0):
-                    # if there are multiple edges from node A to node B, add that many elements to the list
-                    for k in range(int(self.graph[i][j])):
-                        edge_list.append((i, j))
-        # randomly select an index in the list; the edge at that index will be the randomly selected one
-        edgePair = edge_list[np.random.choice(len(edge_list))]
-        
+        edgePair = self.edge_list[np.random.choice(len(self.edge_list))]
         return edgePair[0], edgePair[1]
 
 '''
@@ -118,7 +118,6 @@ def kargers(graphObj):
 
         # contract it
         graphCopy.contract(u, v)
-
     # min-cut is represented by the remaining 2 supernodes
     # we return the # of edges between them, as this is the size of the cut
     return graphCopy.graph.sum(axis=None) / 2
@@ -126,5 +125,15 @@ def kargers(graphObj):
 ''' main function for Karger's Min-Cut application '''
 if __name__ == '__main__':
     # For convinience, each of the N computers in the data file is labelled 0, 1, 2, ... N. 
-    graphObj = Graph(filename='data.txt')
-    print(kargers(graphObj))
+    graphObj = Graph(filename='med_data.txt')
+    
+    # in the worst case, we remove all the edges
+    min_cut = len(graphObj.edge_list)
+    
+    num_trials = 100
+    for i in range(num_trials):
+        # over multiple trials, take the minimum result we've seen
+        min_cut = min(min_cut, kargers(graphObj))
+    
+    # prints the min number of edges that, if removed, will disconnect the graph
+    print(min_cut)
