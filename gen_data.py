@@ -14,17 +14,22 @@ import numpy as np
 NUM_COMPUTERS = 4
 
 # The number of networks (must be >= number of computers)
-NUM_NETWORKS = 10
+NUM_NETWORKS = 3
 
-file_contents = []
-file_contents.append(NUM_COMPUTERS)
+if NUM_COMPUTERS > NUM_NETWORKS:
+    print("NUM_NETOWRKS must >= NUM_COMPUTERS")
 
-# first guarantee that the graph is connected
-for i in range(1, NUM_COMPUTERS + 1):
-    file_contents.append("{} {}".format(i-1, i % NUM_COMPUTERS))
+else:
+    file_contents = []
+    file_contents.append(NUM_COMPUTERS)
 
-for i in range(NUM_COMPUTERS + 1, NUM_NETWORKS + 1):
-    edge = np.random.choice(NUM_COMPUTERS, size=2, replace=False)
-    file_contents.append("{} {}".format(edge[0], edge[1]))
+    # first guarantee that the graph is connected
+    for i in range(1, NUM_COMPUTERS + 1):
+        file_contents.append("{} {}".format(i-1, i % NUM_COMPUTERS))
 
-np.savetxt('data_{}_comps_{}_networks.txt'.format(NUM_COMPUTERS, NUM_NETWORKS), file_contents, fmt="%s")
+    # add additional edges to get to NUM_NETWORKS
+    for i in range(NUM_COMPUTERS + 1, NUM_NETWORKS + 1):
+        edge = np.random.choice(NUM_COMPUTERS, size=2, replace=False)
+        file_contents.append("{} {}".format(edge[0], edge[1]))
+
+    np.savetxt('data_{}_comps_{}_networks.txt'.format(NUM_COMPUTERS, NUM_NETWORKS), file_contents, fmt="%s")
