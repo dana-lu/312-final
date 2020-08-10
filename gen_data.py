@@ -10,8 +10,10 @@ is connected to computer B in the network.
 
 import numpy as np
 
+# The number of computers desired
 NUM_COMPUTERS = 4
 
+# The number of networks (must be >= number of computers)
 NUM_NETWORKS = 10
 
 file_contents = []
