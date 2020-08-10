@@ -125,13 +125,13 @@ def kargers(graphObj):
 ''' main function for Karger's Min-Cut application '''
 if __name__ == '__main__':
     # For convinience, each of the N computers in the data file is labelled 0, 1, 2, ... N. 
-    graphObj = Graph(filename='med_data.txt')
+    graphObj = Graph(filename='data_4_comps_10_networks.txt')
     
     # in the worst case, we remove all the edges
     min_cut = len(graphObj.edge_list)
     
-    num_trials = 100
-    for i in range(num_trials):
+    NUM_TRIALS = 100
+    for i in range(NUM_TRIALS):
         # over multiple trials, take the minimum result we've seen
         min_cut = min(min_cut, kargers(graphObj))
     
