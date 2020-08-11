@@ -2,6 +2,8 @@
 
 import numpy as np
 import copy
+import matplotlib.pyplot as plt
+import time
 
 '''
 This class represents a graph data structure with data intialized from a file
@@ -122,18 +124,56 @@ def kargers(graphObj):
     # we return the # of edges between them, as this is the size of the cut
     return graphCopy.graph.sum(axis=None) / 2
 
-''' main function for Karger's Min-Cut application '''
-if __name__ == '__main__':
-    # For convinience, each of the N computers in the data file is labelled 0, 1, 2, ... N. 
-    graphObj = Graph(filename='data_4_comps_10_networks.txt')
+'''
+:param filename: the dataset for the graph
+:param num_trials: the number of iterations to run Karger's algorithm
+runs karger's algorithm on the given dataset and returns the minimum result from
+the number of trials.
+returns the size of the min_cut as estimated after running karger's num_trials times
+'''
+def application(filename, num_trials):
+   # For convenience, each of the N computers in the data file is labelled 0, 1, 2, ... N. 
+    graphObj = Graph(filename)
     
     # in the worst case, we remove all the edges
     min_cut = len(graphObj.edge_list)
     
-    NUM_TRIALS = 100
-    for i in range(NUM_TRIALS):
+    for i in range(num_trials):
         # over multiple trials, take the minimum result we've seen
         min_cut = min(min_cut, kargers(graphObj))
     
-    # prints the min number of edges that, if removed, will disconnect the graph
-    print(min_cut)
+    # return the min number of edges that, if removed, will disconnect the graph
+    return min_cut
+
+
+if __name__ == '__main__':
+
+    MAX_INPUT_SIZE = 21
+
+    # list of datasets we want to use
+    filenames = []
+
+    for i in range(1, MAX_INPUT_SIZE + 1):
+        filenames.append('data_{}_comps_{}_networks.txt'.format(i*10, 20*i))
+
+    # input size (# of vertices) in the ith file
+    sizes = [10*x for x in range(MAX_INPUT_SIZE)]
+
+    # time it took to run the i-th file
+    times = []
+    times.append(0)
+    for i in range(1, len(filenames)):
+        t0 = time.time()
+        application(filename=filenames[i], num_trials=100)
+        t1 = time.time()
+        times.append(t1 - t0)
+    
+    # plot the running time vs input size
+    plt.plot(sizes, times)
+    plt.xlabel('Number of vertices in input')
+    plt.ylabel('Time to run (seconds)')
+    plt.title('Running time (for 10k trials) vs input size')
+    plt.savefig('runtime_vs_input.png')
+
+    for time in times:
+        print(time)
