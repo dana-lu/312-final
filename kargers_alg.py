@@ -148,6 +148,9 @@ def application(filename, num_trials):
 
 if __name__ == '__main__':
 
+    '''
+    Running time vs input size graph
+    '''
     MAX_INPUT_SIZE = 21
 
     # list of datasets we want to use
@@ -177,3 +180,23 @@ if __name__ == '__main__':
 
     for time in times:
         print(time)
+
+
+    '''
+    Distribution of Karger's return value
+    '''
+    x = [i for i in range(400)]
+    h = 400 * [0]
+
+    for i in range(1000):
+        h[int(application(filename='data_200_comps_400_networks.txt', num_trials=1))] += 1
+
+
+    # x - array of x-axis labels
+    # h - array of length x of bar heights
+    plt.bar(x, h, color="lightblue")
+    plt.xlabel("value returned by Kargers")
+    plt.ylabel("# of trials that returned this value")
+    plt.title("Karger's Algorithm Distribution")
+    plt.xlim(0, 10)
+    plt.savefig("bar_graph.png")
